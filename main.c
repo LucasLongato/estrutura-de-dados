@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "arvoreRubroNegra.h"
+#include "arvoreRubroNegraFilme.h"
+
 
 
 //#define MAX_FIELD_SIZE 1000
 #define MAX_LINE_LENGTH 10000
 
-void processarLinhaFilme(char *linha, Node ** filmes) {
+void processarLinhaFilme(char *linha, NodeFilme ** filmes) {
 
     char* token = strtok(linha, "\t");
     char titulo[BUFSIZ]; //Coluna 3
@@ -22,19 +24,19 @@ void processarLinhaFilme(char *linha, Node ** filmes) {
         {
         case 0:
             id = atoi(token + 2);
-            printf("Id: %d\t", id);
+            printf("| \tId: %d\t |", id);
             break;
         case 3: 
             strcpy(titulo, token);
-            printf("%s\t", titulo);
+            printf(" \t%s\t |", titulo);
             break;
         case 5:
             ano = atoi(token);
-            printf("%d\t", ano);
+            printf(" \t%d\t |", ano);
             break;
         case 8:
             strcpy(genero, token);
-            printf("%s\t", genero);
+            printf(" \t%s|", genero);
             break;
         }
         
@@ -42,34 +44,34 @@ void processarLinhaFilme(char *linha, Node ** filmes) {
         coluna++;
     };
 
-    *filmes = inserirNoAtor(*filmes, id, titulo, ano, genero);
+    *filmes = inserirNoFilme(*filmes, id, titulo, genero, ano);
     printf("\n");
 }
 
-void processarLinhaAtor(char *linha,Node ** root) {
+void processarLinhaAtor(char *linha, NodeAtor ** root) {
 
     char* token = strtok(linha, "\t");
     char nome[BUFSIZ];
     int coluna = 0;
     int id;
     int* filmesArray = NULL;
-    int numOcorrencias;
   
 
     while (token != NULL) {
+        int numOcorrencias;
+        char *titles;
         switch (coluna)
         {
         case 0:
             id = atoi(token + 2);
-            printf("Id: %d\t", id);
+            printf("| \tId: %d\t |", id);
             break;
-        case 3: 
+        case 1:
             strcpy(nome, token);
-            printf("%s\t", nome);
-            break;
+            printf("\t%s\t |", nome);
         case 5:
             numOcorrencias = 0;
-            char *titles = token;
+            titles = token;
 
             while ((titles = strstr(titles, "tt")) != NULL) {
                 numOcorrencias++;
@@ -84,52 +86,75 @@ void processarLinhaAtor(char *linha,Node ** root) {
                 titles = strtok(NULL, ",");
             }
 
+            printf(" \t[");
             for (int i = 0; i < numOcorrencias; i++) {
                 printf("%d ", filmesArray[i]);
             }
+            printf("]\t |");
 
             *root = inserirNoAtor(*root,id,nome,filmesArray,numOcorrencias);
             free(filmesArray);
-            break;
         }
+        
+        token = strtok(NULL, "\t");
+        coluna++;
     }
+
     printf("\n");
 }
 
-void lerArquivoTSV(const char *nomeArquivo, int numLinhas,Node ** filmes, Node ** atores) {
+void lerArquivoTSV(int numLinhas, NodeAtor ** atores, NodeFilme ** filmes) {
+    int ehFilme = 0;
     FILE *arquivo;
-    char linha[MAX_LINE_LENGTH];
-    int contador = 0;
 
-    arquivo = fopen(nomeArquivo, "r");
-    if (arquivo == NULL) {
-        printf("Erro ao abrir o arquivo.\n");
-        return;
-    }
+    do
+    {   
+        char linha[MAX_LINE_LENGTH];
+        int contador = 0;
+        ehFilme++;
 
-    fgets(linha, MAX_LINE_LENGTH, arquivo);
+        if(ehFilme == 1){
+            arquivo = fopen("dataTitle.tsv", "r");
+        }else{
+            arquivo = fopen("dataName.tsv", "r");
+        }
 
-    while (fgets(linha, MAX_LINE_LENGTH, arquivo) != NULL && contador < numLinhas) {
-        // processarLinhaAtor(linha,root);
-        processarLinhaFilme(linha, filmes);
-        contador++;
-    }
+        if (arquivo == NULL) {
+            printf("Erro ao abrir o arquivo.\n");
 
-    fclose(arquivo);
+            return;
+        }
+
+        fgets(linha, MAX_LINE_LENGTH, arquivo);
+
+        while (fgets(linha, MAX_LINE_LENGTH, arquivo) != NULL && contador < numLinhas) {
+            if(ehFilme == 1){
+                processarLinhaFilme(linha, filmes);
+            }else{
+                processarLinhaAtor(linha, atores);
+            }
+            contador++;
+        }
+
+        fclose(arquivo);
+        printf("----------------------------------------------------------------------------------------------\n");
+    } while (ehFilme == 1);
 }
 
 int main() {
-    Node* filmes = NULL;
-    Node* atores = NULL;
+    NodeAtor* atores = NULL;
+    NodeFilme* filmes = NULL;
 
-    lerArquivoTSV("../dataTitle.tsv", 3, &filmes, &atores);
+    lerArquivoTSV(10, &atores, &filmes);
 
-    printf('\n\n\n');
-    imprimirArvore(filmes);
+    // imprimirArvore(atores);
+    // imprimirArvoreFilme(filmes);
+
 
     // imprimirNo(filmes,2);
 
-    liberarArvore(filmes);
+    liberarArvore(atores);
+    liberarArvoreFilme(filmes);
 
     return 0;
 }

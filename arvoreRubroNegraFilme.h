@@ -4,64 +4,60 @@
 #include <string.h>
 
 // Estrutura de um nó
-typedef struct NodeAtor {
+typedef struct NodeFilme {
     int chave;
-    char Ator[BUFSIZ];
+    char titulo[BUFSIZ]; //Coluna 3
+    char genero[BUFSIZ]; //Coluna 8
+    int ano;             //Coluna 0
     int isRed; // 0 = red | 1 = black
-    struct NodeAtor* pai;
-    struct NodeAtor* esquerda;
-    struct NodeAtor* direita;
-    int numFilmes;
-    int* Filmes;
-} NodeAtor;
+    struct NodeFilme* pai;
+    struct NodeFilme* esquerda;
+    struct NodeFilme* direita;
+} NodeFilme;
 
 
-NodeAtor* criarNo(int chave, const char* nomeAtor) {
-    NodeAtor* novoNo = (NodeAtor*)malloc(sizeof(NodeAtor));
+NodeFilme* criarNoFilme(int chave, const char* titulo, const char* genero, int ano) {
+    NodeFilme* novoNo = (NodeFilme*)malloc(sizeof(NodeFilme));
     novoNo->chave = chave;
-    strcpy(novoNo->Ator, nomeAtor);
-    novoNo->numFilmes = 0;
+    strcpy(novoNo->titulo, titulo);
+    strcpy(novoNo->genero, genero);
+    novoNo->ano = ano;
     novoNo->isRed = 0;
     novoNo->pai = NULL;
     novoNo->esquerda = NULL;
     novoNo->direita = NULL;
-    novoNo->Filmes = NULL;
     return novoNo;
 }
 
 
-void liberarNo(NodeAtor* no) {
+void liberarNoFilme(NodeFilme* no) {
     if (no != NULL) {
-        free(no->Filmes);
         free(no);
     }
 }
 
 
-void liberarArvore(NodeAtor* raiz) {
+void liberarArvoreFilme(NodeFilme* raiz) {
     if (raiz != NULL) {
-        liberarArvore(raiz->esquerda);
-        liberarArvore(raiz->direita);
-        liberarNo(raiz);
+        liberarArvoreFilme(raiz->esquerda);
+        liberarArvoreFilme(raiz->direita);
+        liberarNoFilme(raiz);
     }
 }
 
-void imprimirArvore(NodeAtor* raiz) {
+void imprimirArvoreFilme(NodeFilme* raiz) {
     if (raiz != NULL) {
         printf("[");
-        imprimirArvore(raiz->esquerda);
-        printf(" Chave: %d, Ator: %s ", raiz->chave, raiz->Ator);
-        for (int i = 0; i < raiz->numFilmes; i++) {
-            printf("%d  ", raiz->Filmes[i]);
-        }
-        imprimirArvore(raiz->direita);
+        imprimirArvoreFilme(raiz->esquerda);
+        printf(" Chave: %d, Titulo: %s, Genero: %s, Ano: %d", raiz->chave, raiz->titulo, raiz->genero, raiz->ano);
+        imprimirArvoreFilme(raiz->direita);
         printf("]");
     }
 }
 
 
-NodeAtor* rotacionarEsquerda(NodeAtor* raiz, NodeAtor* no) {
-    NodeAtor* filhoDireita = no->direita;
+NodeFilme* rotacionarEsquerdaFilme(NodeFilme* raiz, NodeFilme* no) {
+    NodeFilme* filhoDireita = no->direita;
     no->direita = filhoDireita->esquerda;
     if (filhoDireita->esquerda != NULL) {
         filhoDireita->esquerda->pai = no;
@@ -80,8 +76,8 @@ NodeAtor* rotacionarEsquerda(NodeAtor* raiz, NodeAtor* no) {
 }
 
 
-NodeAtor* rotacionarDireita(NodeAtor* raiz, NodeAtor* no) {
-    NodeAtor* filhoEsquerda = no->esquerda;
+NodeFilme* rotacionarDireitaFilme(NodeFilme* raiz, NodeFilme* no) {
+    NodeFilme* filhoEsquerda = no->esquerda;
     no->esquerda = filhoEsquerda->direita;
     if (filhoEsquerda->direita != NULL) {
         filhoEsquerda->direita->pai = no;
@@ -99,16 +95,17 @@ NodeAtor* rotacionarDireita(NodeAtor* raiz, NodeAtor* no) {
     return raiz;
 }
 
-void trocarCores(NodeAtor* no1, NodeAtor* no2) {
+void trocarCoresFilme(NodeFilme* no1, NodeFilme* no2) {
     bool corTemp = no1->isRed;
     no1->isRed = no2->isRed;
     no2->isRed = corTemp;
 }
 
-NodeAtor* corrigirInsercao(NodeAtor* raiz, NodeAtor* no) {
+NodeFilme* corrigirInsercaoFilme(NodeFilme* raiz, NodeFilme* no) {
     while (no != raiz && no->pai->isRed) {
         if (no->pai == no->pai->pai->esquerda) {
-            NodeAtor* tio = no->pai->pai->direita;
+
+            NodeFilme* tio = no->pai->pai->direita;
             if (tio != NULL && tio->isRed == 0) {
                 no->pai->isRed = 1;
                 tio->isRed = 1;
@@ -117,14 +114,14 @@ NodeAtor* corrigirInsercao(NodeAtor* raiz, NodeAtor* no) {
             } else {
                 if (no == no->pai->direita) {
                     no = no->pai;
-                    raiz = rotacionarEsquerda(raiz, no);
+                    raiz = rotacionarEsquerdaFilme(raiz, no);
                 }
                 no->pai->isRed = 1;
                 no->pai->pai->isRed = 0;
-                raiz = rotacionarDireita(raiz, no->pai->pai);
+                raiz = rotacionarDireitaFilme(raiz, no->pai->pai);
             }
         } else {
-            NodeAtor* tio = no->pai->pai->esquerda;
+            NodeFilme* tio = no->pai->pai->esquerda;
             if (tio != NULL && tio->isRed == 0) {
                 no->pai->isRed = 1;
                 tio->isRed = 1;
@@ -133,27 +130,24 @@ NodeAtor* corrigirInsercao(NodeAtor* raiz, NodeAtor* no) {
             } else {
                 if (no == no->pai->esquerda) {
                     no = no->pai;
-                    raiz = rotacionarDireita(raiz, no);
+                    raiz = rotacionarDireitaFilme(raiz, no);
                 }
                 no->pai->isRed = 1;
                 no->pai->pai->isRed = 0;
-                raiz = rotacionarEsquerda(raiz, no->pai->pai);
+                raiz = rotacionarEsquerdaFilme(raiz, no->pai->pai);
             }
         }
     }
     raiz->isRed = false;
+
     return raiz;
 }
 
 
-NodeAtor* inserirNoAtor(NodeAtor* raiz, int chave, const char* nomeAtor, const int* filmes, int numFilmes) {
-    NodeAtor* novoNo = criarNo(chave, nomeAtor);
-    novoNo->Filmes = (int*)malloc(numFilmes * sizeof(int));
-    memcpy(novoNo->Filmes, filmes, numFilmes * sizeof(int));
-    novoNo->numFilmes = numFilmes;
-
-    NodeAtor* pai = NULL;
-    NodeAtor* atual = raiz;
+NodeFilme* inserirNoFilme(NodeFilme* raiz, int chave, const char* titulo, const char* genero, int ano) {
+    NodeFilme* novoNo = criarNoFilme(chave, titulo, genero, ano);
+    NodeFilme* pai = NULL;
+    NodeFilme* atual = raiz;
     while (atual != NULL) {
         pai = atual;
         if (chave < atual->chave) {
@@ -172,13 +166,13 @@ NodeAtor* inserirNoAtor(NodeAtor* raiz, int chave, const char* nomeAtor, const i
         pai->direita = novoNo;
     }
 
-    raiz = corrigirInsercao(raiz, novoNo);
+    raiz = corrigirInsercaoFilme(raiz, novoNo);
     return raiz;
 }
 
 
-NodeAtor* buscarNo(NodeAtor* raiz, int chave) {
-    NodeAtor* atual = raiz;
+NodeFilme* buscarNoFilme(NodeFilme* raiz, int chave) {
+    NodeFilme* atual = raiz;
     while (atual != NULL && atual->chave != chave) {
         if (chave < atual->chave) {
             atual = atual->esquerda;
@@ -189,12 +183,8 @@ NodeAtor* buscarNo(NodeAtor* raiz, int chave) {
     return atual;
 }
 
-void imprimirNo(NodeAtor* raiz, int chave) {
-    NodeAtor* noEncontrado = buscarNo(raiz,chave);
-    printf("\n\nChave: %d Ator: %s  Filmes: ",noEncontrado->chave,noEncontrado->Ator);
-    for (int i = 0; i < raiz->numFilmes; i++) {
-            printf("%d  ", raiz->Filmes[i]);
-        }
-
+void imprimirNoFilme(NodeFilme* raiz, int chave) {
+    NodeFilme* noEncontrado = buscarNoFilme(raiz,chave);
+    printf("\n\nChave: %d, Titulo: %s, Genero: %s, Ano: %d", raiz->chave, raiz->titulo, raiz->genero, raiz->ano);
 }
 
