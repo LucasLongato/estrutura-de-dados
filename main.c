@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "arvoreRubroNegra.h"
+#include "arvoreRubroNegraAtor.h"
 #include "arvoreRubroNegraFilme.h"
 
 
@@ -68,7 +68,8 @@ void processarLinhaAtor(char *linha, NodeAtor ** root) {
             break;
         case 1:
             strcpy(nome, token);
-            printf("\t%s\t |", nome);
+            printf("\t%s\t\t |", nome);
+            break;
         case 5:
             numOcorrencias = 0;
             titles = token;
@@ -145,15 +146,18 @@ int main() {
     NodeAtor* atores = NULL;
     NodeFilme* filmes = NULL;
 
-    lerArquivoTSV(10, &atores, &filmes);
+    lerArquivoTSV(50, &atores, &filmes);
 
-    // imprimirArvore(atores);
-    // imprimirArvoreFilme(filmes);
+    printf("\n\nAtores:\n");
+    imprimirArvoreAtor(atores);
+
+    printf("\n\nFilmes:\n");
+    imprimirArvoreFilme(filmes);
 
 
     // imprimirNo(filmes,2);
 
-    liberarArvore(atores);
+    liberarArvoreAtor(atores);
     liberarArvoreFilme(filmes);
 
     return 0;
