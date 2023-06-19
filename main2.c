@@ -1,13 +1,54 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "arvoreRubroNegra.h"
+#include "arvoreRubroNegraAtor.h"
+#include "arvoreRubroNegraFilme.h"
+#include "grafo.h"
 
 
 //#define MAX_FIELD_SIZE 1000
 #define MAX_LINE_LENGTH 10000
 
-void processarLinha(char *linha,Node ** root) {
+void processarLinhaFilme(char *linha, NodeFilme ** filmes) {
+
+    char* token = strtok(linha, "\t");
+    char titulo[BUFSIZ]; //Coluna 3
+    char genero[BUFSIZ]; //Coluna 8
+    int ano;             //Coluna 0
+    int coluna = 0;
+    int id;
+  
+
+    while (token != NULL) {
+        switch (coluna)
+        {
+        case 0:
+            id = atoi(token + 2);
+            printf("| \tId: %d\t |", id);
+            break;
+        case 3: 
+            strcpy(titulo, token);
+            printf(" \t%s\t |", titulo);
+            break;
+        case 5:
+            ano = atoi(token);
+            printf(" \t%d\t |", ano);
+            break;
+        case 8:
+            strcpy(genero, token);
+            printf(" \t%s|", genero);
+            break;
+        }
+        
+        token = strtok(NULL, "\t");
+        coluna++;
+    };
+
+    *filmes = inserirNoFilme(*filmes, id, titulo, genero, ano);
+    printf("\n");
+}
+
+void processarLinhaAtor(char *linha, NodeAtor ** root) {
 
     char* token = strtok(linha, "\t");
     char nome[BUFSIZ];
@@ -17,19 +58,21 @@ void processarLinha(char *linha,Node ** root) {
   
 
     while (token != NULL) {
-        if (coluna == 0) {
+        int numOcorrencias;
+        char *titles;
+        switch (coluna)
+        {
+        case 0:
             id = atoi(token + 2);
-            printf("Id: %d\t", id);
-        }
-        else if (coluna == 1) {
+            printf("| \tId: %d\t |", id);
+            break;
+        case 1:
             strcpy(nome, token);
-            printf("%s\t", nome);
-        }
-        else if (coluna == 5) {
-
-            
-            int numOcorrencias = 0;
-            char *titles = token;
+            printf("\t%s\t\t |", nome);
+            break;
+        case 5:
+            numOcorrencias = 0;
+            titles = token;
 
             while ((titles = strstr(titles, "tt")) != NULL) {
                 numOcorrencias++;
@@ -44,11 +87,13 @@ void processarLinha(char *linha,Node ** root) {
                 titles = strtok(NULL, ",");
             }
 
+            printf(" \t[");
             for (int i = 0; i < numOcorrencias; i++) {
                 printf("%d ", filmesArray[i]);
             }
+            printf("]\t |");
 
-            *root = inserirNo(*root,id,nome,filmesArray,numOcorrencias);
+            *root = inserirNoAtor(*root,id,nome,filmesArray,numOcorrencias);
             free(filmesArray);
         }
         
@@ -59,51 +104,155 @@ void processarLinha(char *linha,Node ** root) {
     printf("\n");
 }
 
-void lerArquivoTSV(const char *nomeArquivo, int numLinhas,Node ** root) {
+void lerArquivoTSV(int numLinhas, NodeAtor ** atores, NodeFilme ** filmes) {
+    int ehFilme = 0;
     FILE *arquivo;
-    char linha[MAX_LINE_LENGTH];
-    int contador = 0;
 
-    arquivo = fopen(nomeArquivo, "r");
-    if (arquivo == NULL) {
-        printf("Erro ao abrir o arquivo.\n");
+    do
+    {   
+        char linha[MAX_LINE_LENGTH];
+        int contador = 0;
+        ehFilme++;
+
+        if(ehFilme == 1){
+            arquivo = fopen("dataTitle.tsv", "r");
+        }else{
+            arquivo = fopen("dataName.tsv", "r");
+        }
+
+        if (arquivo == NULL) {
+            printf("Erro ao abrir o arquivo.\n");
+
+            return;
+        }
+
+        fgets(linha, MAX_LINE_LENGTH, arquivo);
+
+        while (fgets(linha, MAX_LINE_LENGTH, arquivo) != NULL && contador < numLinhas) {
+            if(ehFilme == 1){
+                processarLinhaFilme(linha, filmes);
+            }else{
+                processarLinhaAtor(linha, atores);
+            }
+            contador++;
+        }
+
+        fclose(arquivo);
+        printf("----------------------------------------------------------------------------------------------\n");
+    } while (ehFilme == 1);
+}
+
+///GRAFOS
+
+void addEdge(Grafo* grafo, filme* filme int movieIndex1, int movieIndex2) {
+    if (grafo == NULL || movieIndex1 < 0 || movieIndex2 < 0 ||
+        movieIndex1 >= grafo->numVertices || movieIndex2 >= grafo->numVertices) {
         return;
     }
 
-    fgets(linha, MAX_LINE_LENGTH, arquivo);
-
-    while (fgets(linha, MAX_LINE_LENGTH, arquivo) != NULL && contador < numLinhas) {
-        processarLinha(linha,root);
-        contador++;
-    }
-
-    fclose(arquivo);
+    grafo->adjMatrix[movieIndex1 * grafo->numVertices + movieIndex2] = 1;
+    grafo->adjMatrix[movieIndex2 * grafo->numVertices + movieIndex1] = 1;
 }
 
 
+grafh criargrafo(filme* filmes, int numfilmes) {
+    grafh grafo;
+    grafo.numVertices = numfilmes;
+    grafo.adjMatrix = calloc(numfilmes * numfilmes, sizeof(int));
+    if (grafo.adjMatrix == NULL) {
+        printf("Erro ao alocar mem ria.\n");
+        return grafo;
+    }
 
+    for (int i = 0; i < numfilmes; i++) {
+        for (int j = i + 1; j < numfilmes; j++) {
+            filme filme1 = filmes[i];
+            filme filme2 = filmes[j];
+
+            if (filme1.startYear == filme2.startYear && strcmp(filme1.genres, filme2.genres) == 0) {
+                addEdge(&grafo, filmes, i, j);
+            }
+        }
+    }
+
+    return grafo;
+}
+
+
+void grafoprint(grafh grafo, filme* filmes) {
+    if (grafo == NULL || filmes == NULL) {
+        return;
+    }
+
+    for (int i = 0; i < grafo.numVertices; i++) {
+        filme filme = filmes[i];
+
+        printf("%s (%d):\n", filme.primaryTitle, filme.startYear);
+
+        for (int j = 0; j < grafo.numVertices; j++) {
+            if (grafo.adjMatrix[i * grafo.numVertices + j] == 1) {
+                filme relatedMovie = filmes[j];
+                printf("\t%s (%d)\n", relatedMovie.primaryTitle, relatedMovie.startYear);
+            }
+        }
+
+        printf("\n");
+    }
+}
+
+//______________________________________________
+  grafoDot(&grafo, filmes, "grafo.dot"){
+
+    fprintf(arquivo, "graph {\n");
+
+    for (int i = 0; i < grafo.numVertices; i++) {
+        filme filme = filmes[i];
+        fprintf(arquivo, "\t%d [label=\"%s (%d)\"];\n", i, filme.primaryTitle, filme.startYear);
+    }
+
+    for (int i = 0; i < grafo.numVertices; i++) {
+        for (int j = i + 1; j < grafo.numVertices; j++) {
+            if (grafo.adjMatrix[i * grafo.numVertices + j] == 1) {
+                fprintf(arquivo, "\t%d -- %d;\n", i, j);
+            }
+        }
+    }
+
+    fprintf(arquivo, "}");
+
+    fclose(arquivo);
+    printf("Arquivo gerado com sucesso.\n");
+  }
+//______________________________________________
 int main() {
-    Node* root = NULL;
+    NodeAtor* atores = NULL;
+    NodeFilme* filmes = NULL;
 
-    lerArquivoTSV("datanome.tsv", 5,&root);
+    lerArquivoTSV(50, &atores, &filmes);
 
-    imprimirArvore(root);
+    printf("\n\nAtores:\n");
+    imprimirArvoreAtor(atores);
+
+    printf("\n\nFilmes:\n");
+    imprimirArvoreFilme(filmes);
+
+    //graph
+    
+    printf("\n\nGrafo:\n");
+    Grafo grafo =criargrafo(filmes, 50);
+    grafoprint(grafo, filmes);
+
+   
 
 
-    imprimirNo(root,2);
 
-    liberarArvore(root);
+    // imprimirNo(filmes,2);
 
-    artists_file = fopen("datanome,tsv", "r");
-    movies_file = fopen("data.tsv", "r");
+    liberarArvoreAtor(atores);
+    liberarArvoreFilme(filmes);
 
-    read_artists(artists_file, &artists);
-    read_movies(movies_file, &movies);
-
-    build_graph(artists, movies, &graph);
-
-    print_graph_dot(graph);
 
     return 0;
 }
+
 
