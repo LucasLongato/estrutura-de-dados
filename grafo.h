@@ -31,7 +31,6 @@ typedef struct {
 } Grafo;
 
 
-void addEdge(Grafo *grafo, int movieIndex1, int movieIndex2);
-Grafo criarGrafo(NodeFilme *filmes, int numFilmes);
-void imprimirGrafo(Grafo grafo, NodeFilme *filmes) ;
-void gerarGrafoDot(Grafo grafo, NodeFilme *filmes, const char *filename);
+void addAresta(Grafo * grafo, NodeFilme * filmesArray, int filme1, int filme2);
+grafo criargrafo(NodeFilme * filmesArray, int numFilmes);
+void printGrafo(grafo* grafo, NodeFilme* filmesArray);
