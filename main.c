@@ -2,19 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include "arvoreRubroNegraAtor.h"
-#include "arvoreRubroNegraFilme.h"
+#include "grafo.h"
 
 
 
 //#define MAX_FIELD_SIZE 1000
 #define MAX_LINE_LENGTH 10000
 
-void processarLinhaFilme(char *linha, NodeFilme ** filmes) {
+void processarLinhaFilme(char *linha, Grafo * grafo) {
 
     char* token = strtok(linha, "\t");
-    char titulo[BUFSIZ]; //Coluna 3
-    char genero[BUFSIZ]; //Coluna 8
-    int ano;             //Coluna 0
+    char titulo[BUFSIZ];      
     int coluna = 0;
     int id;
   
@@ -28,23 +26,15 @@ void processarLinhaFilme(char *linha, NodeFilme ** filmes) {
             break;
         case 3: 
             strcpy(titulo, token);
-            printf(" \t%s\t |", titulo);
-            break;
-        case 5:
-            ano = atoi(token);
-            printf(" \t%d\t |", ano);
-            break;
-        case 8:
-            strcpy(genero, token);
-            printf(" \t%s|", genero);
+            printf(" \tTitulo: %s\t |", titulo);
             break;
         }
         
         token = strtok(NULL, "\t");
         coluna++;
     };
+    adicionarFilme(grafo,id,titulo);
 
-    *filmes = inserirNoFilme(*filmes, id, titulo, genero, ano);
     printf("\n");
 }
 
@@ -104,7 +94,7 @@ void processarLinhaAtor(char *linha, NodeAtor ** root) {
     printf("\n");
 }
 
-void lerArquivoTSV(int numLinhas, NodeAtor ** atores, NodeFilme ** filmes) {
+void lerArquivoTSV(int numLinhas, NodeAtor ** atores, Grafo * grafo) {
     int ehFilme = 0;
     FILE *arquivo;
 
@@ -130,7 +120,8 @@ void lerArquivoTSV(int numLinhas, NodeAtor ** atores, NodeFilme ** filmes) {
 
         while (fgets(linha, MAX_LINE_LENGTH, arquivo) != NULL && contador < numLinhas) {
             if(ehFilme == 1){
-                processarLinhaFilme(linha, filmes);
+                processarLinhaFilme(linha, grafo);
+                
             }else{
                 processarLinhaAtor(linha, atores);
             }
@@ -142,23 +133,58 @@ void lerArquivoTSV(int numLinhas, NodeAtor ** atores, NodeFilme ** filmes) {
     } while (ehFilme == 1);
 }
 
+
+void percorrerArvoreAtor(NodeAtor* raiz, Grafo* grafo) {
+    if (raiz == NULL) {
+        return;
+    }
+
+
+    // Verificar se o ator possui filmes
+    if (raiz->numFilmes > 0) {
+        // Adicionar uma aresta para cada filme do ator
+        for (int i = 0; i < raiz->numFilmes; i++) {
+            adicionarAresta(grafo, raiz->chave, raiz->Filmes[i]);
+        }
+    }
+
+
+    // Percorrer a subárvore esquerda
+    percorrerArvoreAtor(raiz->esquerda, grafo);
+
+    // Percorrer a subárvore direita
+    percorrerArvoreAtor(raiz->direita, grafo);
+}
+
+
+
+
 int main() {
     NodeAtor* atores = NULL;
-    NodeFilme* filmes = NULL;
+    Grafo* grafo = criarGrafo();
 
-    lerArquivoTSV(50, &atores, &filmes);
+    lerArquivoTSV(1000, &atores, grafo);
 
     printf("\n\nAtores:\n");
-    imprimirArvoreAtor(atores);
+    // imprimirArvoreAtor(atores);
 
-    printf("\n\nFilmes:\n");
-    imprimirArvoreFilme(filmes);
+    percorrerArvoreAtor(atores,grafo);
+
+
+    printf("\nGrafo:\n");
+    imprimirGrafo(grafo);
+
+    visitarGrafoDot(grafo);
+
+
+    // imprimirArvoreFilme(grafo);
 
 
     // imprimirNo(filmes,2);
 
     liberarArvoreAtor(atores);
-    liberarArvoreFilme(filmes);
+    liberarGrafo(grafo);
 
     return 0;
 }
+

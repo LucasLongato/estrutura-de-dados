@@ -196,6 +196,5 @@ void imprimirNoAtor(NodeAtor* raiz, int chave) {
     for (int i = 0; i < raiz->numFilmes; i++) {
             printf("%d  ", raiz->Filmes[i]);
         }
-
 }
 
