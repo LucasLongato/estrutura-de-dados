@@ -30,8 +30,8 @@ typedef struct {
     int numVertices;
 } Grafo;
 
-void addEdge(Grafo* grafo, filme* filme int movieIndex1, int movieIndex2);
-grafh criargrafo(filme* filmes, int numfilmes) ;
-void grafoprint(grafh grafo, filme* filmes);
 
-
+void addEdge(Grafo *grafo, int movieIndex1, int movieIndex2);
+Grafo criarGrafo(NodeFilme *filmes, int numFilmes);
+void imprimirGrafo(Grafo grafo, NodeFilme *filmes) ;
+void gerarGrafoDot(Grafo grafo, NodeFilme *filmes, const char *filename);
