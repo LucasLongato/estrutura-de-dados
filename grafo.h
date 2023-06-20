@@ -89,7 +89,7 @@ void adicionarAresta(Grafo* grafo, int idOrigem, int idDestino) {
     if (filmeOrigem == NULL || filmeDestino == NULL) {
         return;
     }
-
+    printf("Origem: %d Destino: %d\n",filmeOrigem,filmeDestino);
     // Criar uma nova aresta
     Aresta* novaAresta = (Aresta*)malloc(sizeof(Aresta));
     novaAresta->indice = filmeDestino->posicao;
@@ -105,6 +105,19 @@ void adicionarAresta(Grafo* grafo, int idOrigem, int idDestino) {
         }
         arestaAtual->proxima = novaAresta;
     }
+}
+
+int buscarFilmeNoGrafo(Grafo* grafo, int idFilme) {
+    if (grafo == NULL) {
+        return 0;
+    }
+    int i;
+    for (i = 0; i < grafo->listaFilmes.tamanho; i++) {
+        if (grafo->listaFilmes.filmes[i].id == idFilme) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 // void imprimirGrafo(Grafo* grafo) {

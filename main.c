@@ -139,15 +139,25 @@ void percorrerArvoreAtor(NodeAtor* raiz, Grafo* grafo) {
         return;
     }
 
-
     // Verificar se o ator possui filmes
     if (raiz->numFilmes > 0) {
-        // Adicionar uma aresta para cada filme do ator
+        // Verificar se algum filme do ator já está presente no grafo
+        int possuiFilmeNoGrafo = 0;
         for (int i = 0; i < raiz->numFilmes; i++) {
-            adicionarAresta(grafo, raiz->chave, raiz->Filmes[i]);
+            if (buscarFilmeNoGrafo(grafo, raiz->Filmes[i])) {
+                possuiFilmeNoGrafo = 1; 
+                break;
+            }
+        }
+
+        // Adicionar uma aresta apenas se o ator tiver um filme no grafo
+        if (possuiFilmeNoGrafo) {
+            for (int i = 0; i < raiz->numFilmes; i++) {
+                adicionarAresta(grafo, raiz->chave, raiz->Filmes[i]);
+                printf("%d\n",raiz->Filmes[i]);
+            }
         }
     }
-
 
     // Percorrer a subárvore esquerda
     percorrerArvoreAtor(raiz->esquerda, grafo);
