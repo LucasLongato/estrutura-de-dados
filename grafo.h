@@ -85,11 +85,12 @@ void adicionarAresta(Grafo* grafo, int idOrigem, int idDestino) {
         }
     }
 
-    // Verificar se os filmes foram encontrados
-    if (filmeOrigem == NULL || filmeDestino == NULL) {
+    // Verificar se os filmes foram encontrados   
+    if (filmeOrigem == NULL || filmeDestino == NULL || filmeOrigem->id == filmeDestino->id) {
         return;
     }
-    printf("Origem: %d Destino: %d\n",filmeOrigem,filmeDestino);
+    printf("Origem: %d Destino: %d\n",filmeOrigem->id,filmeDestino->id);
+
     // Criar uma nova aresta
     Aresta* novaAresta = (Aresta*)malloc(sizeof(Aresta));
     novaAresta->indice = filmeDestino->posicao;
@@ -113,32 +114,39 @@ int buscarFilmeNoGrafo(Grafo* grafo, int idFilme) {
     }
     int i;
     for (i = 0; i < grafo->listaFilmes.tamanho; i++) {
-        if (grafo->listaFilmes.filmes[i].id == idFilme) {
-            return 1;
+        Filme filme = grafo->listaFilmes.filmes[i];
+        if (filme.id == idFilme) {
+            // printf("\nIDGrafo: %d IDArvore: %d\n",filmeTeste.id,idFilme);
+
+            // printf("\nID: %d NOME: %s POSICAO: %d ARESTAS: %d\n", grafo->listaFilmes.filmes->id, grafo->listaFilmes.filmes->nome,grafo->listaFilmes.filmes->posicao,grafo->listaFilmes.filmes->arestas);
+            // printf("\nID: %d NOME: %s\n",filmeTeste.id,filmeTeste.nome);
+
+            //adicionarAresta(grafo,filme.id,idFilme);
+            return filme.id;
         }
     }
     return 0;
 }
 
-// void imprimirGrafo(Grafo* grafo) {
-//     if (grafo == NULL) {
-//         return;
-//     }
+void imprimirGrafo1(Grafo* grafo) {
+    if (grafo == NULL) {
+        return;
+    }
 
-//     int i, j;
-//     for (i = 0; i < grafo->listaFilmes.tamanho; i++) {
-//         Filme filme = grafo->listaFilmes.filmes[i];
-//         printf("Filme %d: %s\n", filme.id, filme.nome);
-//         printf("Conexoes: ");
-//         Aresta* arestaAtual = filme.arestas;
-//         while (arestaAtual != NULL) {
-//             Filme filmeConexao = grafo->listaFilmes.filmes[arestaAtual->indice];
-//             printf("%s ", filmeConexao.nome);
-//             arestaAtual = arestaAtual->proxima;
-//         }
-//         printf("\n\n");
-//     }
-// }
+    int i, j;
+    for (i = 0; i < grafo->listaFilmes.tamanho; i++) {
+        Filme filme = grafo->listaFilmes.filmes[i];
+        printf("Filme %d: %s\n", filme.id, filme.nome);
+        printf("Conexoes: ");
+        Aresta* arestaAtual = filme.arestas;
+        while (arestaAtual != NULL) {
+            Filme filmeConexao = grafo->listaFilmes.filmes[arestaAtual->indice];
+            printf("%s ", filmeConexao.nome);
+            arestaAtual = arestaAtual->proxima;
+        }
+        printf("\n\n");
+    }
+}
 
 void imprimirGrafo(Grafo* grafo) {
     if (grafo == NULL) {

@@ -143,8 +143,10 @@ void percorrerArvoreAtor(NodeAtor* raiz, Grafo* grafo) {
     if (raiz->numFilmes > 0) {
         // Verificar se algum filme do ator já está presente no grafo
         int possuiFilmeNoGrafo = 0;
+        int id = 0;
         for (int i = 0; i < raiz->numFilmes; i++) {
-            if (buscarFilmeNoGrafo(grafo, raiz->Filmes[i])) {
+            id = buscarFilmeNoGrafo(grafo, raiz->Filmes[i]);
+            if (id != 0) {
                 possuiFilmeNoGrafo = 1; 
                 break;
             }
@@ -153,8 +155,7 @@ void percorrerArvoreAtor(NodeAtor* raiz, Grafo* grafo) {
         // Adicionar uma aresta apenas se o ator tiver um filme no grafo
         if (possuiFilmeNoGrafo) {
             for (int i = 0; i < raiz->numFilmes; i++) {
-                adicionarAresta(grafo, raiz->chave, raiz->Filmes[i]);
-                printf("%d\n",raiz->Filmes[i]);
+                adicionarAresta(grafo, id, raiz->Filmes[i]);
             }
         }
     }
@@ -173,7 +174,7 @@ int main() {
     NodeAtor* atores = NULL;
     Grafo* grafo = criarGrafo();
 
-    lerArquivoTSV(1000, &atores, grafo);
+    lerArquivoTSV(10000, &atores, grafo);
 
     printf("\n\nAtores:\n");
     // imprimirArvoreAtor(atores);

@@ -60,6 +60,22 @@ void imprimirArvoreAtor(NodeAtor* raiz) {
     }
 }
 
+void buscarFilmes(NodeAtor* raiz) {
+    if (raiz != NULL) {
+        imprimirArvoreAtor(raiz->esquerda);
+        printf("\n| Chave: %d | Nome: %s | ", raiz->chave, raiz->Ator);
+        printf(" [");
+        for (int i = 0; i < raiz->numFilmes; i++) {
+            printf("%d ", raiz->Filmes[i]);
+        }
+        printf("]");
+
+        imprimirArvoreAtor(raiz->direita);
+    }
+}
+
+
+
 
 NodeAtor* rotacionarEsquerdaAtor(NodeAtor* raiz, NodeAtor* no) {
     NodeAtor* filhoDireita = no->direita;
